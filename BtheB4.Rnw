@@ -1,0 +1,101 @@
+\documentclass[11pt]{article}
+
+% margins, size, formatting
+
+\oddsidemargin=0in
+\evensidemargin=0in
+\topmargin=0in
+%\textwidth=6.5in
+%\textheight=9.5in
+\parindent = 0 in
+\pagestyle{plain}
+
+\usepackage{amsmath,amssymb,amsthm, amsfonts}
+\usepackage{array}
+\usepackage{fancyhdr}
+\usepackage{geometry}
+\pagestyle{fancy}
+\usepackage{graphicx}
+
+
+
+\lhead{\textbf{Mathods 2: BtheB Analysis\\ February 2014}}
+\rhead{\textbf{Steve Calderbank, Jon Chiang\\ Maritza Mallek, and Emily Ramos}}
+\cfoot{}
+
+\begin{document}
+
+
+
+\section*{Backround/Context}
+
+The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognative behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 200 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m. The variable "drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either TAU, treatment as usual, or BtheB, Beat the Blues), the bdi variables refer to the Beck Depression Inventory at certain points during the study.
+
+
+<<loading, tidy=TRUE>>=
+library("HSAUR2")
+library("ggplot2")
+attach(BtheB)
+@
+
+<<>>=
+summary(BtheB[,c(1:4,6,8)])
+@
+
+
+\section*{Variable Descriptions}
+
+The variables we are interested in are ``bdi.pre" and ``bdi. 8m", Beck Depression Inventory II before treatment and after six months follow-up. 
+
+<<variables, warning=FALSE>>=
+theme_set(theme_bw())
+#Subsetting the data
+BtheB.tau = BtheB[treatment=="TAU",]
+BtheB.btb = BtheB[treatment=="BtheB",]
+@
+
+
+<<plots, warning=FALSE, fig.height=4>>=
+qplot(bdi.pre, geom = "density", color = treatment, main ="BDI Before Treatment Density")
+qplot(bdi.pre, fill = treatment, main ="BDI Before Treatment Histogram")
+qplot(bdi.3m, geom = "density", color = treatment, main ="BDI After 1 Month Follow-up")
+qplot(bdi.3m, fill = treatment, main ="BDI After 6 Month Follow-up")
+@
+
+The before treatment groups look similar. However, the after 1 month follow-up treatment groups look severely different. After 1 month follow-up, it seems more BtheB subjects score lower on the BDI scale than the TAU group (which means the subjects are less depressed). This suggests the BtheB treatment works better than treatment as usual.  
+
+\subsection*{Missing Data}
+
+We chose these two variables to measure the association using a baseline measure and a midpoint measure. Using the 3 month mark (after 1 month follow-up), only 27 subjects having missing data. We originally wished to use the end of the study, however 48 subjects had missing data.
+
+<<>>=
+sum(is.na(bdi.pre) == TRUE)
+sum(is.na(bdi.3m) == TRUE)
+sum(is.na(bdi.8m) == TRUE)
+@
+
+
+\section*{Hypothesis}
+
+
+
+\section*{Analysis}
+
+<<>>=
+blm  <- lm(bdi.3m ~ bdi.pre)
+blm
+blm1 <- lm(bdi.3m ~ bdi.pre, data = BtheB.tau)
+blm1
+blm2 <- lm(bdi.3m ~ bdi.pre, data = BtheB.treat)
+blm2
+qplot(BtheB$bdi.pre, BtheB$bdi.3m, data=BtheB, color=treatment) + geom_abline(intercept= -1.8138 , slope=0.8231, colour="red")+ geom_abline(intercept=0.9949, slope=0.4871, colour="blue") + geom_abline(intercept=0.06449 , slope=0.63686, colour="black")
+
+@
+
+
+\section*{Results}
+
+
+
+
+\end{document}
