@@ -39,6 +39,7 @@ library(ggplot2)
 theme_set(theme_bw())
 attach(BtheB)
 library(visreg)
+library(knitr)
 @
 
 \section*{Background/Context}
@@ -274,9 +275,6 @@ summary(BtheB_lme2)
 #simpler random intercept model
 
 
-
-
-
 @
 
 
@@ -303,20 +301,27 @@ blm2 <- lm(bdi.3m ~ bdi.pre, data = BtheB.btb)
 blm2
 qplot(BtheB$bdi.pre, BtheB$bdi.3m, data=BtheB, color=treatment) + geom_abline(intercept= -1.8138 , slope=0.8231, colour="red")+ geom_abline(intercept=0.9949, slope=0.4871, colour="blue") + geom_abline(intercept=0.06449 , slope=0.63686, colour="black")
 @
-Treatment as usual has a linear equation of
+\newpage
+The treatment as usual group (TAU) has a linear equation of
 \begin{eqnarray*}
  y &=& \beta_0 + \beta_1(x) \\
  y &=& -1.8138 + .8231(x)
 \end{eqnarray*}
 For every 1 unit increase in x (pre treatment) we would expect a .8231 increase in y (3 months post treatment). 
+\newline
 
-Beat the Blues treatment has a linear equation of
+Beat the Blues treatment (BtheB) has a linear equation of
 \begin{eqnarray*}
  y &=& \beta_0 + \beta_1(x) \\
  y &=& .9949 + .4871(x)
 \end{eqnarray*}
 For every 1 unit increase in x (pre treatment) we would expect a .4871 increase in y (3 months post treatment).
+\newline
 
+These regression equations, while difficult to interpret, justify the hypotheses proposed earlier.  Our results indicate that patients who participate in either treatment group will experiance a decline in depression from pre-treatment to post-treatment 3 months later (based on Beck's Depression Inventory). The results also suggest that as long as the patient exhibits a pre-treatment depression score over 8 then the Beat the Blues treatment should be more effective at decreasing depression.  
+\newline
+
+Additional analysis should be conducted in order to conclude that these differences are significant. 
 
 
 \end{document}
