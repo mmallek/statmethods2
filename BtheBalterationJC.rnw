@@ -200,21 +200,46 @@ At the six months followup date (or 8 months since the initial data were taken),
 <<>>=
 #JC
 #referencing
-#BtheB.tau = BtheB[treatment=="TAU",]
-#BtheB.btb = BtheB[treatment=="BtheB",]
+
+#graph data with boxplot of each measures for each treatment group
+#longform code
+#An introduction to Applied Multivariate Analysis with R (Everitt, Hothorn)
+
+#code contains missing values
+BtheB$subject<-factor(rownames(BtheB))
+nobs<-nrow(BtheB)
+BtheB_long<- reshape(BtheB,idvar = "subject", varying = c("bdi.2m","bdi.3m", "bdi.5m", "bdi.8m"), direction = "long")
+BtheB_long$time<-rep(c(2,3,5,8),rep(nobs,4))
+
+#lme() function removes missing values, does not remove participants with at least one missing value
+#This generic function fits a linear mixed-effects model in the formulation described in Laird and Ware (1982) but allowing for nested random effects. The within-group errors are allowed to be correlated and/or have unequal variances. 
+#might have to install this package
+#install.packages(“lme4”)
+
+#requires loading
+#library(lme4)
+#library(nlme) 
+
+library(nlme) 
+library(lme4)
+BtheB_lme1<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ 1 | subject, data = BtheB_long, na.action = na.omit)
+
+BtheB_lme2<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ time | subject, data = BtheB_long, na.action = na.omit)
+
+#anova()
+#Compute analysis of variance (or deviance) tables for one or more fitted model objects.
+#These objects represent analysis-of-variance and analysis-of-deviance tables. When given a single argument it produces a table which tests whether the model terms are significant.When given a sequence of objects, anova tests the models against one another in the order specified.
+
+anova(BtheB_lme1, BtheB_lme2)
 
 
-plot(BtheB.tau)
-plot(BtheB.btb)
+ylim<- range(BtheB[,grep("bdi",names(BtheB))],na.rm=TRUE)
+tau<-subset(BtheB,treatment == "TAU")[,grep("bdi",names(BtheB))]
+boxplot(tau,main="Treated as Usual", ylab = "BDI", xlab= "Time(in months)", names = c(0,2,3,5,8), ylim = ylim)
 
 
-
-
-
-
-
-
-
+btheb<-subset(BtheB,treatment == "BtheB")[,grep("bdi",names(BtheB))]
+boxplot(btheb,main="Beat the Blues", ylab = "BDI", xlab= "Time(in months)", names = c(0,2,3,5,8), ylim = ylim)
 
 
 
