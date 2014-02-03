@@ -302,6 +302,20 @@ blm2 <- lm(bdi.3m ~ bdi.pre, data = BtheB.btb)
 blm2
 qplot(BtheB$bdi.pre, BtheB$bdi.3m, data=BtheB, color=treatment) + geom_abline(intercept= -1.8138 , slope=0.8231, colour="red")+ geom_abline(intercept=0.9949, slope=0.4871, colour="blue") + geom_abline(intercept=0.06449 , slope=0.63686, colour="black")
 @
+Treatment as usual has a linear equation of
+\begin{equation}
+ $y = \beta_0 + \beta_1(x)$ 
+ y = -1.8138 + .8231(x)
+\end{equation}
+For every 1 unit increase in x (pre treatment) we would expect a .8231 increase in y (3 months post treatment). 
+
+Beat the Blues treatment has a linear equation of
+\begin{equation}
+ $y = \beta_0 + \beta_1(x)$ 
+ y = .9949 + .4871(x)
+\end{equation}
+For every 1 unit increase in x (pre treatment) we would expect a .4871 increase in y (3 months post treatment). 
+
 
 
 \end{document}
