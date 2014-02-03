@@ -86,9 +86,6 @@ The Beck Depression Inventory (BDI, BDI-II), created by Dr. Aaron T. Beck, is a 
     
 \end{center}
 
-
-
-
 <<>>=
 summary(BtheB[,c(1:4,6,8)])
 @
