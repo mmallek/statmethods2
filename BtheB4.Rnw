@@ -41,27 +41,19 @@ attach(BtheB)
 
 @
 
-
-<<>>=
-
-#JC
-#added the str function, i think it is 100 observation according to that. I added a table on how to intepret the BDI because it isn't explicitly explained anywhere.
-
-@
-
 \section*{Backround/Context}
 
 The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognitive behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 100 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m.  The variable ``drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either treatment as usual(TAU), or Beat the Blues (BtheB)). The bdi variables refer to the Beck Depression Inventory at certain points during the study. The variables are titled 3m, 5m, and 8m to refer to 1, 3, and 6 months followup \emph{relative to the 2-month post-treatment visit}.
 
 \subsection*{Data Preview}
 
-<<>>=
+%<<>>=
 
-#jc
+%#jc
 
-head(BtheB)
+%head(BtheB)
 
-@
+%@
 
 
 
@@ -106,7 +98,6 @@ The Beck Depression Inventory (BDI, BDI-II), created by Dr. Aaron T. Beck, is a 
 
 <<>>=
 summary(BtheB[,c(1:4,6,8)])
-str(BtheB)
 @
 
 
@@ -124,7 +115,7 @@ BtheB.tau = BtheB[treatment=="TAU",]
 BtheB.btb = BtheB[treatment=="BtheB",]
 @
 
-<<FUNmultiplot, tidy=TRUE>>=
+<<FUNmultiplot, tidy=TRUE, echo=FALSE>>=
 #This function allows us to put multiple plots on the same page.
 multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
   require(grid)
@@ -165,23 +156,16 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 <<plots, warning=FALSE, fig.height=6, tidy=TRUE>>=
 h1 = qplot(bdi.pre, fill = treatment, main ="BDI Before Treatment \n Histogram", binwidth=1.5)
-h2 = qplot(bdi.8m, fill = treatment, main ="BDI After 6 Month Follow-up \n Histogram", binwidth=1.5, xlim=c(0,50)) 
+h2 = qplot(bdi.3m, fill = treatment, main ="BDI After 1 Month Follow-up \n Histogram", binwidth=1.5, xlim=c(0,50)) 
 
 p1 = qplot(bdi.pre, geom = "density", color = treatment, main ="BDI Before Treatment \n Density", ylim=c(0,0.06))
-p2 = qplot(bdi.8m, geom = "density", color = treatment, main ="BDI After 6 Month Follow-up \n Density", xlim=c(0,50))
+p2 = qplot(bdi.3m, geom = "density", color = treatment, main ="BDI After 1 Month Follow-up \n Density", xlim=c(0,50))
 
 multiplot(h1,h2,p1,p2, cols=2)
-#multiplot(p1,p2, cols=2)
 
-#I am not sure about this part. Why are we looking at BDI after one month? Also the second plot is either mislabeled in the title or the wrong variable is being called - I'm not sure which so they are just commented out for now.
-
-#qplot(bdi.3m, geom = "density", color = treatment, main ="BDI After 1 Month Follow-up")
-#qplot(bdi.3m, fill = treatment, main ="BDI After 6 Month Follow-up")
 @
 
 The before treatment groups look similar. However, the after 1 month follow-up treatment groups look severely different. After 1 month follow-up, it seems more BtheB subjects score lower on the BDI scale than the TAU group (which means the subjects are less depressed). This suggests the BtheB treatment works better than treatment as usual.  
-
-Maritza's suggestion for this section:
 
 Before treatment, both groups report BDIs that range between 0 and 50. The distribution is similar for both, as shown above. At this point we have not differentiated between those who are on drug treatment and those who are not. 
 
