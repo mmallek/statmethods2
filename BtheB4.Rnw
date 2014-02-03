@@ -19,7 +19,7 @@
 
 
 
-\lhead{\textbf{Mathods 2: BtheB Analysis\\ February 2014}}
+\lhead{\textbf{Methods 2: BtheB Analysis\\ February 2014}}
 \rhead{\textbf{Steve Calderbank, Jon Chiang\\ Maritza Mallek, and Emily Ramos}}
 \cfoot{}
 
@@ -37,21 +37,86 @@ library(HSAUR2)
 library(ggplot2)
 theme_set(theme_bw())
 attach(BtheB)
+
+
+@
+
+
+<<>>=
+
+#JC
+#added the str function, i think it is 100 observation according to that. I added a table on how to intepret the BDI because it isn't explicitly explained anywhere.
+
 @
 
 \section*{Backround/Context}
 
-The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognative behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 200 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m.  The variable ``drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either treatment as usual(TAU), or Beat the Blues (BtheB)). The bdi variables refer to the Beck Depression Inventory at certain points during the study. The variables are titled 3m, 5m, and 8m to refer to 1, 3, and 6 months followup \emph{relative to the 2-month post-treatment visit}.
+The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognitive behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 100 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m.  The variable ``drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either treatment as usual(TAU), or Beat the Blues (BtheB)). The bdi variables refer to the Beck Depression Inventory at certain points during the study. The variables are titled 3m, 5m, and 8m to refer to 1, 3, and 6 months followup \emph{relative to the 2-month post-treatment visit}.
+
+\subsection*{Data Preview}
+
+<<>>=
+
+#jc
+
+head(BtheB)
+
+@
+
+
+
+
+\begin{center}
+    \begin{tabular}{ | l | l | l | p{10cm} |}
+    \hline
+    \textbf{BtheB Column Label}& \textbf{Coding Manual} \\ \hline
+    drug & Did the patient take anti-depressant drugs (No or Yes)\\ \hline
+    length & Length of current episode (greater than or less than 6 months)\\ \hline
+    treatment  & Type of treatment received \\ \hline
+    treatment (TAU) & Treatment as usual \\ \hline
+    treatment (BtheB) & Beat the Blues Cognitive Treatment \\ \hline
+    bdi.pre  & Beck Depression Inventory II before treatment \\ \hline
+   bdi.2m  & Beck Depression Inventory II after two months \\ \hline
+   bdi.4m  & Beck Depression Inventory II after four months \\ \hline
+   bdi.6m  & Beck Depression Inventory II after six months \\ \hline
+    bdi.8m  & Beck Depression Inventory II after eight months \\ \hline
+    
+    \end{tabular}
+\end{center}
+
+\subsection*{Intepreting bdi:}
+
+The Beck Depression Inventory (BDI, BDI-II), created by Dr. Aaron T. Beck, is a 21-question multiple-choice self-report inventory. Testing the patient's thoughts in relation to a level of depression. It signified a paradigm shift in the cognitive approach to depression and therapy.
+
+
+\begin{center}
+    \begin{tabular}{ | l | l | l | p{10cm} |}
+    \hline
+    bdi Scale & Indication \\ \hline
+    0 to 9 & Minimal Depression \\ \hline
+    10 to 18 & Mild Depression \\ \hline
+    19 to 29 & Moderate Depression \\ \hline
+    30 to 63 & Severe Depression \\ \hline
+    \end{tabular}
+    
+\end{center}
+
+
 
 
 <<>>=
 summary(BtheB[,c(1:4,6,8)])
+str(BtheB)
 @
 
 
 \section*{Variable Descriptions}
 % A quantitative and/or visual description of what variables you chose to use for your analysis, along with a hypothesis (or two) that you will be testing.
 The variables we are interested in are ``bdi.pre" and ``bdi.8m", Beck Depression Inventory II before treatment and after six months follow-up. 
+
+
+
+
 
 <<variables, warning=FALSE>>=
 #Subsetting the data
@@ -131,6 +196,125 @@ At the six months followup date (or 8 months since the initial data were taken),
 
 \subsection*{Missing Data}
 %A description of the characteristics of the missing data (including a figure if needed) and a statement and justification as to whether your group is concerned about the missingness having an impact on your analysis.
+
+
+
+
+<<>>=
+#JC
+
+qplot(treatment, bdi.pre, geom = "boxplot", data = BtheB)
+
+#http://people.umass.edu/nick/SADRIworkshop2012/session4_basicStats.html
+#adopted from tutorial
+#with()
+#is a generic function that evaluates expr in a local environment constructed from data. The environment has the caller's environment as its parent. This is useful for simplifying calls to modeling functions.
+(fm1 <- with(BtheB, lm(bdi.pre~treatment)))
+
+#
+
+#Missing data classification:
+
+bdi.last <- rep(NA, nrow(BtheB))
+trt.dur <- rep(NA, nrow(BtheB))
+n.missing <- rep(NA, nrow(BtheB))
+durs <- c(1, 2, 3, 5, 8)
+for (i in 1:nrow(BtheB)) {
+    first.na.idx <- max(which(!is.na(BtheB[i, 4:8])))
+    n.missing[i] <- 5 - first.na.idx
+    trt.dur[i] <- durs[first.na.idx]
+    bdi.last[i] <- BtheB[i, 3 + first.na.idx]
+}
+bdi.change.rate <- (bdi.last - BtheB$bdi.pre)/trt.dur
+
+
+fm2 <- with(BtheB, lm(bdi.change.rate ~ treatment))
+
+fm3 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre + treatment + drug + 
+    length))
+
+fm4 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre * treatment + drug + 
+    length))
+
+library(visreg)
+#A function for visualizing regression models quickly and easily. Default plots contain a confidence band, prediction line, and partial residuals. Factors, transformations, conditioning, interactions, and a variety of other options are supported.
+visreg(fm4, "bdi.pre", by = "treatment")
+@
+
+
+
+
+
+
+
+
+<<>>=
+
+#graph data with boxplot of each measures for each treatment group
+#longform code
+#An introduction to Applied Multivariate Analysis with R (Everitt, Hothorn)
+
+#code contains missing values
+BtheB$subject<-factor(rownames(BtheB))
+
+#nrow and ncol return the number of rows or columns present in x. NCOL and NROW do the same treating a vector as 1-column matrix.
+nobs<-nrow(BtheB)
+
+#reshapes a data frame between ‘wide’ format with repeated measurements in separate columns of the same record and ‘long’ format with the repeated measurements in separate records.
+BtheB_long<- reshape(BtheB,idvar = "subject", varying = c("bdi.2m","bdi.3m", "bdi.5m", "bdi.8m"), direction = "long")
+
+#rep replicates the values in x. It is a generic function, and the (internal) default method is described here.
+BtheB_long$time<-rep(c(2,3,5,8),rep(nobs,4))
+
+#lme() function removes missing values, does not remove participants with at least one missing value
+#This generic function fits a linear mixed-effects model in the formulation described in Laird and Ware (1982) but allowing for nested random effects. The within-group errors are allowed to be correlated and/or have unequal variances. 
+#might have to install this package
+#install.packages(“lme4”)
+
+#requires loading
+#library(lme4)
+#library(nlme) 
+
+library(nlme) 
+library(lme4)
+
+#So-called mixed-effect models (or just mixed models)includeadditionalrandom-effectterms,andare often appropriate for representing clustered, and therefore dependent, data–arising,for example, when data are gathered overtime on the same individuals
+
+BtheB_lme1<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ 1 | subject, data = BtheB_long, na.action = na.omit)
+
+BtheB_lme2<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ time | subject, data = BtheB_long, na.action = na.omit)
+
+#anova()
+#Compute analysis of variance (or deviance) tables for one or more fitted model objects.
+#These objects represent analysis-of-variance and analysis-of-deviance tables. When given a single argument it produces a table which tests whether the model terms are significant.When given a sequence of objects, anova tests the models against one another in the order specified.
+
+anova(BtheB_lme1, BtheB_lme2)
+
+
+ylim<- range(BtheB[,grep("bdi",names(BtheB))],na.rm=TRUE)
+tau<-subset(BtheB,treatment == "TAU")[,grep("bdi",names(BtheB))]
+boxplot(tau,main="Treated as Usual", ylab = "BDI", xlab= "Time(in months)", names = c(0,2,3,5,8), ylim = ylim)
+
+
+btheb<-subset(BtheB,treatment == "BtheB")[,grep("bdi",names(BtheB))]
+boxplot(btheb,main="Beat the Blues", ylab = "BDI", xlab= "Time(in months)", names = c(0,2,3,5,8), ylim = ylim)
+#Additional information about the linear mixed-effects fit represented by object is extracted and included as components of object. The returned object is suitable for printing with the print.summary.lme method.
+
+summary(BtheB_lme1)
+summary(BtheB_lme2)
+
+#simpler random intercept model
+
+
+
+
+
+@
+
+
+
+
+
 
 <<question>>=
 #M: I am not sure what is going on here - I never saw a discussion where we decided to change our variables. Emily sent this to me: 
