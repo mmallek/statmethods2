@@ -197,9 +197,58 @@ At the six months followup date (or 8 months since the initial data were taken),
 \subsection*{Missing Data}
 %A description of the characteristics of the missing data (including a figure if needed) and a statement and justification as to whether your group is concerned about the missingness having an impact on your analysis.
 
+
+
+
 <<>>=
 #JC
-#referencing
+
+qplot(treatment, bdi.pre, geom = "boxplot", data = BtheB)
+
+#http://people.umass.edu/nick/SADRIworkshop2012/session4_basicStats.html
+#adopted from tutorial
+#with()
+#is a generic function that evaluates expr in a local environment constructed from data. The environment has the caller's environment as its parent. This is useful for simplifying calls to modeling functions.
+(fm1 <- with(BtheB, lm(bdi.pre~treatment)))
+
+#
+
+#Missing data classification:
+
+bdi.last <- rep(NA, nrow(BtheB))
+trt.dur <- rep(NA, nrow(BtheB))
+n.missing <- rep(NA, nrow(BtheB))
+durs <- c(1, 2, 3, 5, 8)
+for (i in 1:nrow(BtheB)) {
+    first.na.idx <- max(which(!is.na(BtheB[i, 4:8])))
+    n.missing[i] <- 5 - first.na.idx
+    trt.dur[i] <- durs[first.na.idx]
+    bdi.last[i] <- BtheB[i, 3 + first.na.idx]
+}
+bdi.change.rate <- (bdi.last - BtheB$bdi.pre)/trt.dur
+
+
+fm2 <- with(BtheB, lm(bdi.change.rate ~ treatment))
+
+fm3 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre + treatment + drug + 
+    length))
+
+fm4 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre * treatment + drug + 
+    length))
+
+library(visreg)
+#A function for visualizing regression models quickly and easily. Default plots contain a confidence band, prediction line, and partial residuals. Factors, transformations, conditioning, interactions, and a variety of other options are supported.
+visreg(fm4, "bdi.pre", by = "treatment")
+@
+
+
+
+
+
+
+
+
+<<>>=
 
 #graph data with boxplot of each measures for each treatment group
 #longform code
@@ -207,8 +256,14 @@ At the six months followup date (or 8 months since the initial data were taken),
 
 #code contains missing values
 BtheB$subject<-factor(rownames(BtheB))
+
+#nrow and ncol return the number of rows or columns present in x. NCOL and NROW do the same treating a vector as 1-column matrix.
 nobs<-nrow(BtheB)
+
+#reshapes a data frame between ‘wide’ format with repeated measurements in separate columns of the same record and ‘long’ format with the repeated measurements in separate records.
 BtheB_long<- reshape(BtheB,idvar = "subject", varying = c("bdi.2m","bdi.3m", "bdi.5m", "bdi.8m"), direction = "long")
+
+#rep replicates the values in x. It is a generic function, and the (internal) default method is described here.
 BtheB_long$time<-rep(c(2,3,5,8),rep(nobs,4))
 
 #lme() function removes missing values, does not remove participants with at least one missing value
@@ -222,6 +277,9 @@ BtheB_long$time<-rep(c(2,3,5,8),rep(nobs,4))
 
 library(nlme) 
 library(lme4)
+
+#So-called mixed-effect models (or just mixed models)includeadditionalrandom-effectterms,andare often appropriate for representing clustered, and therefore dependent, data–arising,for example, when data are gathered overtime on the same individuals
+
 BtheB_lme1<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ 1 | subject, data = BtheB_long, na.action = na.omit)
 
 BtheB_lme2<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ time | subject, data = BtheB_long, na.action = na.omit)
@@ -240,7 +298,12 @@ boxplot(tau,main="Treated as Usual", ylab = "BDI", xlab= "Time(in months)", name
 
 btheb<-subset(BtheB,treatment == "BtheB")[,grep("bdi",names(BtheB))]
 boxplot(btheb,main="Beat the Blues", ylab = "BDI", xlab= "Time(in months)", names = c(0,2,3,5,8), ylim = ylim)
+#Additional information about the linear mixed-effects fit represented by object is extracted and included as components of object. The returned object is suitable for printing with the print.summary.lme method.
 
+summary(BtheB_lme1)
+summary(BtheB_lme2)
+
+#simpler random intercept model
 
 
 
