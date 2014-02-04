@@ -172,7 +172,7 @@ The missing values in the BtheB data could represent patients that may have drop
 The analysis reviewed two models and developed a third model to compare and contrast and determine whether there was congruence among the models. This practice would also allow for describing strengths and weaknesses among the models. 
 
 
-\section*{Analysis and Results}
+\section*{Analysis}
 <<>>=
 #JC
 
