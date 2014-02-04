@@ -24,6 +24,7 @@
 \cfoot{}
 
 \begin{document}
+
 %\SweaveOpts{concordance=TRUE}
 
 %<<setworkingdirectory,echo=FALSE>>=
@@ -33,6 +34,7 @@
 
 <<loading, tidy=TRUE, echo=T, warning=FALSE>>=
 # Load necessary libraries and the dataset.
+
 library(HSAUR2)
 library(ggplot2)
 library(visreg)
@@ -46,7 +48,9 @@ attach(BtheB)
 
 \section*{Background/Context}
 
+
 The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognitive behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 100 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m.  The variable ``drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either treatment as usual (TAU), or Beat the Blues (BtheB)). The bdi variables refer to the Beck Depression Inventory at certain points during the study. The variables are titled 3m, 5m, and 8m to refer to 1, 3, and 6 months followup \emph{relative to the 2-month post-treatment visit}. We summarized this information in the table below.
+
 
 \subsection*{Data Preview}
 
@@ -61,14 +65,14 @@ The data we are using is from a clinical trial called ``Beat the Blues". The Bea
     \textbf{BtheB Column Label}& \textbf{Coding Manual} \\ \hline
     drug & Did the patient take anti-depressant drugs (No or Yes)\\ \hline
     length & Length of current episode (greater than or less than 6 months)\\ \hline
-    treatment  & Type of treatment received \\ \hline
+    treatment & Type of treatment received \\ \hline
     treatment (TAU) & Treatment as usual \\ \hline
     treatment (BtheB) & Beat the Blues Cognitive Treatment \\ \hline
-    bdi.pre  & Beck Depression Inventory II before treatment \\ \hline
-   bdi.2m  & Beck Depression Inventory II after two months \\ \hline
-   bdi.4m  & Beck Depression Inventory II after four months \\ \hline
-   bdi.6m  & Beck Depression Inventory II after six months \\ \hline
-    bdi.8m  & Beck Depression Inventory II after eight months \\ \hline
+    bdi.pre & Beck Depression Inventory II before treatment \\ \hline
+   bdi.2m & Beck Depression Inventory II after two months \\ \hline
+   bdi.4m & Beck Depression Inventory II after four months \\ \hline
+   bdi.6m & Beck Depression Inventory II after six months \\ \hline
+    bdi.8m & Beck Depression Inventory II after eight months \\ \hline
     
     \end{tabular}
 \end{center}
@@ -97,8 +101,8 @@ summary(BtheB[,c(1:4,6,8)])
 
 \section*{Variable Descriptions}
 % A quantitative and/or visual description of what variables you chose to use for your analysis, along with a hypothesis (or two) that you will be testing.
-The variables we are interested in are ``bdi.pre" and ``bdi.3m", Beck Depression Inventory II before treatment and at one month follow-up. 
 
+The variables we are interested in are ``bdi.pre" and ``bdi.3m", Beck Depression Inventory II before treatment and at one month follow-up. 
 
 <<variables, warning=FALSE>>=
 #Subsetting the data
@@ -147,7 +151,7 @@ multiplot <- function(..., plotlist=NULL, file, cols=1, layout=NULL) {
 
 <<plots, warning=FALSE, fig.height=6, tidy=TRUE>>=
 h1 = qplot(bdi.pre, fill = treatment, main ="BDI Before Treatment \n Histogram", binwidth=1.5)
-h2 = qplot(bdi.3m, fill = treatment, main ="BDI After 1 Month Follow-up \n Histogram", binwidth=1.5, xlim=c(0,50)) 
+h2 = qplot(bdi.3m, fill = treatment, main ="BDI After 1 Month Follow-up \n Histogram", binwidth=1.5, xlim=c(0,50))
 
 p1 = qplot(bdi.pre, geom = "density", color = treatment, main ="BDI Before Treatment \n Density", ylim=c(0,0.06))
 p2 = qplot(bdi.3m, geom = "density", color = treatment, main ="BDI After 1 Month Follow-up \n Density", xlim=c(0,50))
@@ -160,6 +164,7 @@ multiplot(h1,h2,p1,p2, cols=2)
 
 \paragraph{} At the one month followup date (or 3 months since the initial data were taken), we see shifts in the distribution of the BDI for both groups. The BtheB treatment group reported no BDI levels above about 35, while the TAU group reported BDI across the spectrum from 0-50. The density figures also show a shift to the left, or to lower BDI levels, for both treatment groups. The density graph in particular illustrates a shift in the mean BDI level from about 20-25 pre-treatment to about 8 3-months post-treatment. After 1 month follow-up, it seems more BtheB subjects score lower on the BDI scale than the TAU group (which means the subjects are less depressed). This suggests the BtheB treatment works better than treatment as usual.  
 
+
 \section*{Hypothesis}
 
 \begin{enumerate}
@@ -167,9 +172,12 @@ multiplot(h1,h2,p1,p2, cols=2)
     \item Patients receiving BtheB treatment will experience a greater decline in depression as measured by the Beck Depression Inventory compared to those receiving Treatment As Usual.
 \end{enumerate}
 
+
 \section*{Missing Data}
 We chose these two variables (bdi.pre and bdi.3m) to measure the association using a baseline measure and a midpoint measure. Using the 3 month mark (after 1 month follow-up), only 27 subjects having missing data. We originally wished to use the end of the study, however 48 subjects had missing data. Given a starting number of subjects of 100, we felt uncomfortable testing our hypotheses using data obtained after half the participants had dropped out of the study.
 
+
+\section*{Analysis}
 <<>>=
 sum(is.na(bdi.pre) == TRUE)
 sum(is.na(bdi.3m) == TRUE)
@@ -181,8 +189,6 @@ sum(is.na(bdi.8m) == TRUE)
 
 <<fig.height=4>>=
 #JC
-
-qplot(treatment, bdi.pre, geom = "boxplot", data = BtheB)
 
 #http://people.umass.edu/nick/SADRIworkshop2012/session4_basicStats.html
 #adopted from tutorial
@@ -209,10 +215,10 @@ bdi.change.rate <- (bdi.last - BtheB$bdi.pre)/trt.dur
 
 fm2 <- with(BtheB, lm(bdi.change.rate ~ treatment))
 
-fm3 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre + treatment + drug + 
+fm3 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre + treatment + drug +
     length))
 
-fm4 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre * treatment + drug + 
+fm4 <- with(BtheB, lm(bdi.change.rate ~ bdi.pre * treatment + drug +
     length))
 
 library(visreg)
@@ -220,7 +226,7 @@ library(visreg)
 visreg(fm4, "bdi.pre", by = "treatment")
 @
 
-
+Observing a model developed by Professor Reich, Professor Reich created a new variable to test by creating a rate of change BDI score. This method dealt with missing values through neither deleting missing values or dropping participants, but uses all available data to assess a model to test whether there is a relationship between baseline BDI and the rate of change in BDI in the two types of treatment. The BDI change for groups that had undergone treatment as usual or used the Beat the Blues cognitive therapy.
 
 
 
@@ -229,45 +235,33 @@ visreg(fm4, "bdi.pre", by = "treatment")
 
 <<fig.height=4>>=
 
-#graph data with boxplot of each measures for each treatment group
-#longform code
-#An introduction to Applied Multivariate Analysis with R (Everitt, Hothorn)
 
-#code contains missing values
 BtheB$subject<-factor(rownames(BtheB))
 
 #nrow and ncol return the number of rows or columns present in x. NCOL and NROW do the same treating a vector as 1-column matrix.
 nobs<-nrow(BtheB)
 
-#reshapes a data frame between ‘wide’ format with repeated measurements in separate columns of the same record and ‘long’ format with the repeated measurements in separate records.
+
 BtheB_long<- reshape(BtheB,idvar = "subject", varying = c("bdi.2m","bdi.3m", "bdi.5m", "bdi.8m"), direction = "long")
 
-#rep replicates the values in x. It is a generic function, and the (internal) default method is described here.
+#rep replicates the values in x. 
 BtheB_long$time<-rep(c(2,3,5,8),rep(nobs,4))
 
 #lme() function removes missing values, does not remove participants with at least one missing value
-#This generic function fits a linear mixed-effects model in the formulation described in Laird and Ware (1982) but allowing for nested random effects. The within-group errors are allowed to be correlated and/or have unequal variances. 
-#might have to install this package
-#install.packages(“lme4”)
+#This generic function fits a linear mixed-effects model in the formulation described in Laird and Ware (1982) but allowing for nested random effects. 
 
-#requires loading
-#library(lme4)
-#library(nlme) 
 
-library(nlme) 
+
+library(nlme)
 library(lme4)
 
-#So-called mixed-effect models (or just mixed models)includeadditionalrandom-effectterms,andare often appropriate for representing clustered, and therefore dependent, data–arising,for example, when data are gathered overtime on the same individuals
+
 
 BtheB_lme1<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ 1 | subject, data = BtheB_long, na.action = na.omit)
 
 BtheB_lme2<- lme(bdi~ bdi.pre + time + treatment + drug + length, random = ~ time | subject, data = BtheB_long, na.action = na.omit)
 
-#anova()
-#Compute analysis of variance (or deviance) tables for one or more fitted model objects.
-#These objects represent analysis-of-variance and analysis-of-deviance tables. When given a single argument it produces a table which tests whether the model terms are significant.When given a sequence of objects, anova tests the models against one another in the order specified.
 
-anova(BtheB_lme1, BtheB_lme2)
 
 
 ylim<- range(BtheB[,grep("bdi",names(BtheB))],na.rm=TRUE)
@@ -277,25 +271,20 @@ boxplot(tau,main="Treated as Usual", ylab = "BDI", xlab= "Time(in months)", name
 
 btheb<-subset(BtheB,treatment == "BtheB")[,grep("bdi",names(BtheB))]
 boxplot(btheb,main="Beat the Blues", ylab = "BDI", xlab= "Time(in months)", names = c(0,2,3,5,8), ylim = ylim)
-#Additional information about the linear mixed-effects fit represented by object is extracted and included as components of object. The returned object is suitable for printing with the print.summary.lme method.
-
-summary(BtheB_lme1)
-summary(BtheB_lme2)
-
-#simpler random intercept model
 
 
 @
+The linear mixed-effect model is appropriate for data that is gathered overtime on the same individuals. The use of the linear mixed effects model drops the missing values from the model, but it does not drop the participants from the list and uses the available data. The box five repeated measure in each group display a decline in the BDI scores, with the plots suggesting that the Beat the Blues Treatment may be more effective according to the linear mixed effects model. The box plots indicate that both treatments were effective decreasing the BDI score.
+\newline
 
 
 
-\section*{Analysis and Results}
 %Results, with interpretation, of output from an SLR model. We haven't discussed yet using binary predictors or X variables, but feel free to include them. The interpretation is very similar. "For a one unit change in X, …”
 
 We plotted linear regressions for the BDI levels pre-treatment and one month post-followup.
 
 <<fig.height=4, tidy=TRUE>>=
-blm  <- lm(bdi.3m ~ bdi.pre)
+blm <- lm(bdi.3m ~ bdi.pre)
 blm
 blm1 <- lm(bdi.3m ~ bdi.pre, data = BtheB.tau)
 blm1
@@ -312,6 +301,7 @@ qplot(BtheB$bdi.pre, BtheB$bdi.3m, data=BtheB, color=treatment) + geom_abline(in
 \end{eqnarray*}
 For every 1 unit increase in x (pre treatment) we would expect a .8231 increase in y (3 months post treatment). 
 
+
 \paragraph{} Beat the Blues treatment (BtheB) has a linear equation of
 \begin{eqnarray*}
  y &=& \beta_0 + \beta_1(x) \\
@@ -321,7 +311,9 @@ For every 1 unit increase in x (pre treatment) we would expect a .4871 increase 
 
 \paragraph{} These regression equations, while difficult to interpret, justify the hypotheses proposed earlier.  Our results indicate that patients who participate in either treatment group will experience a decline in depression from pre-treatment to post-treatment 3 months later (based on Beck's Depression Inventory). The results also suggest that as long as the patient exhibits a pre-treatment depression score over 8 then the Beat the Blues treatment should be more effective at decreasing depression.  
 
-Additional analysis should be conducted in order to conclude that these differences are significant. 
+
+\section*{Discussion}
+The three models of analysis conducted are congruent in that both treatments were effective, and the Beat the Blues cognitive therapy may have implications for more benefit than treatment as usual. Possible further discussion would be to explore the relationships between potential missing values. The data does not imply that the dropouts of the study were randomly dropped, which would cause error in each model if participants were dropped for biased reasons. 
 
 
 \end{document}
