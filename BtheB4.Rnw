@@ -2,18 +2,18 @@
 
 % margins, size, formatting
 
-\oddsidemargin=0in
-\evensidemargin=0in
-\topmargin=0in
+%\oddsidemargin=0in
+%\evensidemargin=0in
+%\topmargin=0in
 %\textwidth=6.5in
 %\textheight=9.5in
-\parindent = 0 in
+%\parindent = 0 in
 \pagestyle{plain}
 
 \usepackage{amsmath,amssymb,amsthm, amsfonts}
 \usepackage{array}
 \usepackage{fancyhdr}
-\usepackage{geometry}
+\usepackage[left=1in,right=1in,top=1in,bottom=1in]{geometry}
 \pagestyle{fancy}
 \usepackage{graphicx}
 
@@ -24,7 +24,7 @@
 \cfoot{}
 
 \begin{document}
-\SweaveOpts{concordance=TRUE}
+%\SweaveOpts{concordance=TRUE}
 
 %<<setworkingdirectory,echo=FALSE>>=
 %getwd()
@@ -32,19 +32,21 @@
 %@
 
 <<loading, tidy=TRUE, echo=T, warning=FALSE>>=
-
-#Note to group: Emily loaded HSAUR2, not HSAUR as the Rpubs document state. They look the same 
+# Load necessary libraries and the dataset.
 library(HSAUR2)
 library(ggplot2)
-theme_set(theme_bw())
-attach(BtheB)
 library(visreg)
 library(knitr)
+library(lme4)
+library(nlme)
+theme_set(theme_bw())
+attach(BtheB)
+
 @
 
 \section*{Background/Context}
 
-The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognitive behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 100 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m.  The variable ``drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either treatment as usual (TAU), or Beat the Blues (BtheB)). The bdi variables refer to the Beck Depression Inventory at certain points during the study. The variables are titled 3m, 5m, and 8m to refer to 1, 3, and 6 months followup \emph{relative to the 2-month post-treatment visit}.
+The data we are using is from a clinical trial called ``Beat the Blues". The Beat the Blues computer program was designed to deliver cognitive behavioural therapy to depressed patients. This dataset is from the R package ``HSAUR2". The data contains 100 observations each relating to a study subject. The study measured 8 variables: drug, length, treatment, bdi.pre, bdi.2m, bdi.3m, bdi.5m and bdi.8m.  The variable ``drug" refers to if the subject took anti-depressants, ``length" is the length of the subjects current episode of depression (either less than 6 months or more than six months), ``treatment" is the treatment the subject was placed on (either treatment as usual (TAU), or Beat the Blues (BtheB)). The bdi variables refer to the Beck Depression Inventory at certain points during the study. The variables are titled 3m, 5m, and 8m to refer to 1, 3, and 6 months followup \emph{relative to the 2-month post-treatment visit}. We summarized this information in the table below.
 
 \subsection*{Data Preview}
 
@@ -95,7 +97,7 @@ summary(BtheB[,c(1:4,6,8)])
 
 \section*{Variable Descriptions}
 % A quantitative and/or visual description of what variables you chose to use for your analysis, along with a hypothesis (or two) that you will be testing.
-The variables we are interested in are ``bdi.pre" and ``bdi.3m", Beck Depression Inventory II before treatment and after six months follow-up. 
+The variables we are interested in are ``bdi.pre" and ``bdi.3m", Beck Depression Inventory II before treatment and at one month follow-up. 
 
 
 <<variables, warning=FALSE>>=
@@ -154,9 +156,9 @@ multiplot(h1,h2,p1,p2, cols=2)
 
 @
 
-Before treatment, both groups report BDIs that range between 0 and 50. The distribution is similar for both, as shown above. At this point we have not differentiated between those who are on drug treatment and those who are not. 
+\paragraph{} Before treatment, both groups report BDIs that range between 0 and 50. The distribution is similar for both, as shown above. At this point we have not differentiated between those who are on drug treatment and those who are not. 
 
-At the one month followup date (or 3 months since the initial data were taken), we see shifts in the distribution of the BDI for both groups. The BtheB treatment group reported no BDI levels above about 35, while the TAU group reported BDI across the spectrum from 0-50. The density figures also show a shift to the left, or to lower BDI levels, for both treatment groups. The density graph in particular illustrates a shift in the mean BDI level from about 20-25 pre-treatment to about 8 3-months post-treatment. After 1 month follow-up, it seems more BtheB subjects score lower on the BDI scale than the TAU group (which means the subjects are less depressed). This suggests the BtheB treatment works better than treatment as usual.  
+\paragraph{} At the one month followup date (or 3 months since the initial data were taken), we see shifts in the distribution of the BDI for both groups. The BtheB treatment group reported no BDI levels above about 35, while the TAU group reported BDI across the spectrum from 0-50. The density figures also show a shift to the left, or to lower BDI levels, for both treatment groups. The density graph in particular illustrates a shift in the mean BDI level from about 20-25 pre-treatment to about 8 3-months post-treatment. After 1 month follow-up, it seems more BtheB subjects score lower on the BDI scale than the TAU group (which means the subjects are less depressed). This suggests the BtheB treatment works better than treatment as usual.  
 
 \section*{Hypothesis}
 
@@ -165,11 +167,19 @@ At the one month followup date (or 3 months since the initial data were taken), 
     \item Patients receiving BtheB treatment will experience a greater decline in depression as measured by the Beck Depression Inventory compared to those receiving Treatment As Usual.
 \end{enumerate}
 
-\subsection*{Missing Data}
-%A description of the characteristics of the missing data (including a figure if needed) and a statement and justification as to whether your group is concerned about the missingness having an impact on your analysis.
-
+\section*{Missing Data}
+We chose these two variables (bdi.pre and bdi.3m) to measure the association using a baseline measure and a midpoint measure. Using the 3 month mark (after 1 month follow-up), only 27 subjects having missing data. We originally wished to use the end of the study, however 48 subjects had missing data. Given a starting number of subjects of 100, we felt uncomfortable testing our hypotheses using data obtained after half the participants had dropped out of the study.
 
 <<>>=
+sum(is.na(bdi.pre) == TRUE)
+sum(is.na(bdi.3m) == TRUE)
+sum(is.na(bdi.8m) == TRUE)
+@
+
+
+
+
+<<fig.height=4>>=
 #JC
 
 qplot(treatment, bdi.pre, geom = "boxplot", data = BtheB)
@@ -217,7 +227,7 @@ visreg(fm4, "bdi.pre", by = "treatment")
 
 
 
-<<>>=
+<<fig.height=4>>=
 
 #graph data with boxplot of each measures for each treatment group
 #longform code
@@ -278,19 +288,11 @@ summary(BtheB_lme2)
 @
 
 
-We chose these two variables to measure the association using a baseline measure and a midpoint measure. Using the 3 month mark (after 1 month follow-up), only 27 subjects having missing data. We originally wished to use the end of the study, however 48 subjects had missing data.
-
-<<>>=
-sum(is.na(bdi.pre) == TRUE)
-sum(is.na(bdi.3m) == TRUE)
-sum(is.na(bdi.8m) == TRUE)
-@
-
 
 \section*{Analysis and Results}
 %Results, with interpretation, of output from an SLR model. We haven't discussed yet using binary predictors or X variables, but feel free to include them. The interpretation is very similar. "For a one unit change in X, …”
 
-We plotted linear regressions for the BDI levels pre-treatment and three months/six months post-followup.
+We plotted linear regressions for the BDI levels pre-treatment and one month post-followup.
 
 <<fig.height=4, tidy=TRUE>>=
 blm  <- lm(bdi.3m ~ bdi.pre)
@@ -301,25 +303,23 @@ blm2 <- lm(bdi.3m ~ bdi.pre, data = BtheB.btb)
 blm2
 qplot(BtheB$bdi.pre, BtheB$bdi.3m, data=BtheB, color=treatment) + geom_abline(intercept= -1.8138 , slope=0.8231, colour="red")+ geom_abline(intercept=0.9949, slope=0.4871, colour="blue") + geom_abline(intercept=0.06449 , slope=0.63686, colour="black")
 @
-\newpage
-The treatment as usual group (TAU) has a linear equation of
+
+
+\paragraph{} The treatment as usual group (TAU) has a linear equation of
 \begin{eqnarray*}
  y &=& \beta_0 + \beta_1(x) \\
  y &=& -1.8138 + .8231(x)
 \end{eqnarray*}
 For every 1 unit increase in x (pre treatment) we would expect a .8231 increase in y (3 months post treatment). 
-\newline
 
-Beat the Blues treatment (BtheB) has a linear equation of
+\paragraph{} Beat the Blues treatment (BtheB) has a linear equation of
 \begin{eqnarray*}
  y &=& \beta_0 + \beta_1(x) \\
  y &=& .9949 + .4871(x)
 \end{eqnarray*}
 For every 1 unit increase in x (pre treatment) we would expect a .4871 increase in y (3 months post treatment).
-\newline
 
-These regression equations, while difficult to interpret, justify the hypotheses proposed earlier.  Our results indicate that patients who participate in either treatment group will experiance a decline in depression from pre-treatment to post-treatment 3 months later (based on Beck's Depression Inventory). The results also suggest that as long as the patient exhibits a pre-treatment depression score over 8 then the Beat the Blues treatment should be more effective at decreasing depression.  
-\newline
+\paragraph{} These regression equations, while difficult to interpret, justify the hypotheses proposed earlier.  Our results indicate that patients who participate in either treatment group will experience a decline in depression from pre-treatment to post-treatment 3 months later (based on Beck's Depression Inventory). The results also suggest that as long as the patient exhibits a pre-treatment depression score over 8 then the Beat the Blues treatment should be more effective at decreasing depression.  
 
 Additional analysis should be conducted in order to conclude that these differences are significant. 
 
